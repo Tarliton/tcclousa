@@ -1,0 +1,112 @@
+#:kivy 1.9.0
+
+<SidePanel>:
+    orientation: 'vertical'
+    spacing: 1
+    SideItem:
+        text: 'Conectar'
+        on_release:
+            app.connect('ubuntu-0')
+            app.navigationdrawer.close_sidepanel()
+
+
+<SideItem@Button>:
+    valign: 'middle'
+    halign: 'center'
+    text_size: self.size
+    markup: False
+
+
+<MainPanel>:
+    id: main_panel
+    cols: 2
+    rows: 12
+    canvas:
+        Color:
+            rgb: .5, .5, .5
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    ButtonNeed:
+        text: '    <\n\nVoltar Slide'
+        on_release: app.send("back")
+    ButtonNeed:
+        text: '    >\n\nAvançar Slide'
+        on_release: app.send("advance")
+    ButtonFast:
+        id: erase_btn
+        text: 'Ativar Borracha' if erase_btn.state=='normal' else 'Desativar Borracha'
+        on_release: app.send("erase: "+erase_btn.state)
+    ButtonFast:
+        id: pen_btn
+        text: 'Ativar Caneta' if pen_btn.state=='normal' else 'Desativar Caneta'
+        on_release: app.send("pen: "+pen_btn.state)
+    ButtonNeed:
+        id: color_btn
+        on_release: app.color_selector.open()
+        background_color: root.pen_color
+        text: 'Cor da Caneta'                
+        background_normal: ''
+    ButtonNeed:
+        text: 'Tamanho: %s' % int(root.pen_size)
+        on_release: app.size_selector.open()
+
+
+<ButtonFast@ToggleButton>:
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    size_hint: (0.5, 0.5)
+
+<ButtonNeed@Button>:
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    size_hint: (0.5, 0.5)
+
+<ColorSelector>:
+    color: app.main_panel.pen_color
+    title: 'Color Slector'
+    content:content
+    BoxLayout:
+        id: content
+        orientation: 'vertical'
+        ColorPicker:
+            id: clr_picker
+            color: root.color
+        BoxLayout:
+            size_hint_y: None
+            height: '27sp'
+            Button:
+                text: 'ok'
+                on_release:
+                    root.color = clr_picker.color
+                    app.main_panel.pen_color = root.color
+                    root.dismiss()
+                    app.send("color: "+repr(app.color_selector.color[0])+','+repr(app.color_selector.color[1])+','+repr(app.color_selector.color[2])+','+repr(app.color_selector.color[3]))
+            Button:
+                text: 'cancel'
+                on_release: root.dismiss()
+
+
+<SizeSelector>:
+    title: 'Tamanho da caneta'
+    id: size_selector
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Tamanho: %s' % int(s1.value) if s1.value else 'Slider not set'
+        Slider:
+            id: s1
+            value: app.main_panel.pen_size
+            range: (1,100)
+            step: 1
+            size_hint_x: 1.
+        BoxLayout:
+            size_hint_y: None
+            height: '27sp'
+            Button:
+                text: 'ok'
+                on_release:
+                    app.main_panel.pen_size = s1.value
+                    root.dismiss()
+                    app.send("tam: "+repr(s1.value))
+            Button:
+                text: 'cancel'
+                on_release: root.dismiss()
